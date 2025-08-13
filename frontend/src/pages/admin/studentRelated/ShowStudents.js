@@ -1,7 +1,17 @@
-import { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { IconButton, ButtonGroup, Button, Popper, Grow, Paper, ClickAwayListener, MenuList, MenuItem } from '@mui/material';
+import {
+    IconButton,
+    ButtonGroup,
+    Button,
+    Popper,
+    Grow,
+    Paper,
+    ClickAwayListener,
+    MenuList,
+    MenuItem
+} from '@mui/material';
 import { KeyboardArrowDown, KeyboardArrowUp } from '@mui/icons-material';
 import PersonRemoveIcon from '@mui/icons-material/PersonRemove';
 import { getAllStudents } from '../../../redux/studentRelated/studentHandle';
@@ -11,40 +21,37 @@ import TableTemplate from '../../../components/TableTemplate';
 import Popup from '../../../components/Popup';
 
 const ShowStudents = () => {
-
-    const navigate = useNavigate()
+    const navigate = useNavigate();
     const dispatch = useDispatch();
 
-    const { studentsList, loading, error, getresponse } = useSelector((state) => state.student);
-    const { currentUser } = useSelector(state => state.user)
+    const { studentsList, error } = useSelector((state) => state.student);
+    const { currentUser } = useSelector(state => state.user);
 
-    const adminID = currentUser._id
+    const adminID = currentUser._id;
 
     useEffect(() => {
         dispatch(getAllStudents(adminID, "Student"));
     }, [adminID, dispatch]);
 
     if (error) {
-        console.log(error)
+        console.log(error);
     }
 
     const [showPopup, setShowPopup] = useState(false);
     const [message, setMessage] = useState("");
 
     const deleteHandler = (deleteID, address) => {
-        console.log(deleteID);
-        console.log(address);
         dispatch(deleteUser(deleteID, address))
             .then(() => {
                 dispatch(getAllStudents(adminID, "Student"));
                 setMessage("Student deleted successfully!");
                 setShowPopup(true);
             })
-            .catch((error) => {
+            .catch(() => {
                 setMessage("Failed to delete student. Please try again.");
                 setShowPopup(true);
             });
-    }
+    };
 
     const StudentButtonHaver = ({ row }) => {
         const options = ['Take Attendance', 'Provide Marks'];
@@ -78,7 +85,7 @@ const ShowStudents = () => {
 
         return (
             <>
-                <IconButton 
+                <IconButton
                     onClick={() => deleteHandler(row.id, "Student")}
                     sx={{
                         '&:hover': {
@@ -88,8 +95,10 @@ const ShowStudents = () => {
                 >
                     <PersonRemoveIcon color="error" />
                 </IconButton>
-                <BlueButton variant="contained"
-                    onClick={() => navigate("/Admin/students/student/" + row.id)}>
+                <BlueButton
+                    variant="contained"
+                    onClick={() => navigate("/Admin/students/student/" + row.id)}
+                >
                     View
                 </BlueButton>
                 <React.Fragment>
@@ -107,9 +116,7 @@ const ShowStudents = () => {
                         </BlackButton>
                     </ButtonGroup>
                     <Popper
-                        sx={{
-                            zIndex: 1,
-                        }}
+                        sx={{ zIndex: 1 }}
                         open={open}
                         anchorEl={anchorRef.current}
                         role={undefined}
@@ -152,23 +159,27 @@ const ShowStudents = () => {
         { id: 'name', label: 'Name', minWidth: 170 },
         { id: 'rollNum', label: 'Roll Number', minWidth: 100 },
         { id: 'batchName', label: 'Batch', minWidth: 100 },
-    ]
+    ];
 
-    const studentRows = studentsList && studentsList.length > 0 && studentsList.map((student) => {
-        return {
+    const studentRows = studentsList && studentsList.length > 0
+        ? studentsList.map((student) => ({
             name: student.studentName,
             rollNum: student.rollNum,
             batchName: student.batchName?.batchName || 'N/A',
             id: student._id,
-        };
-    })
+        }))
+        : [];
 
     return (
         <>
-            <TableTemplate buttonHaver={StudentButtonHaver} columns={studentColumns} rows={studentRows} />
+            <TableTemplate
+                buttonHaver={StudentButtonHaver}
+                columns={studentColumns}
+                rows={studentRows}
+            />
             <Popup message={message} setShowPopup={setShowPopup} showPopup={showPopup} />
         </>
-    )
-}
+    );
+};
 
-export default ShowStudents
+export default ShowStudents;
